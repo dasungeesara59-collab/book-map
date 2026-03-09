@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookmap Pro - 1:1 Dashboard</title>
+  <style>
+    /* -------------------------------------------------------------------------- */
+    /* 🎨 ORIGINAL CSS & REPLICA STYLES                                            */
+    /* -------------------------------------------------------------------------- */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    :root {
+      --bg-primary: #0a0e17;
+      --bg-secondary: #000;
+      --text-primary: #f9fafb;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --accent-blue: #3b82f6;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --accent-orange: #f59e0b;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .tf-btn {
+      padding: 4px 10px;
+      font-size: 10px;
+      border-radius: 6px;
+      background: none;
+      color: #888;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tf-btn.active {
+      background: #3b82f6;
+      color: #fff;
+    }
+
+    @keyframes pulse-green {
+      0% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.5;
+        transform: scale(1.2);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .main-wrapper {
+      position: relative;
+      background: #111;
+      height: 100vh;
+      width: 100vw;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    canvas {
+      image-rendering: -webkit-optimize-contrast;
+      display: block;
+    }
+
+    input[type="range"] {
+      accent-color: #3b82f6;
+      cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+      accent-color: #3b82f6;
+      cursor: pointer;
+      scale: 0.85;
+    }
+
+    .ctrl-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .label-alt {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* 🛠️ DRAWING TOOLBAR */
+    .drawing-toolbar {
+      position: absolute;
+      left: 10px;
+      top: 50px;
+      background: rgba(0, 0, 0, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 5px;
+      z-index: 100;
+      backdrop-filter: blur(5px);
+    }
+
+    .tool-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: 1px solid transparent;
+      color: #888;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+
+    .tool-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+    }
+
+    .tool-btn.active {
+      background: #3b82f6;
+      color: #fff;
+      border-color: #3b82f6;
+    }
+
+    .tool-btn.danger:hover {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="main-wrapper">
+    <!-- 🚀 HEADER REPLICA -->
+    <div
+      style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:10px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div
+          style="background:#000; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:6px 10px; display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px;">📉</span>
+          <h2 style="margin:0; font-size:13px; font-weight:800; color:#fff; letter-spacing:1px;">BOOKMAP PRO</h2>
+        </div>
+        <div
+          style="display:flex; align-items:center; gap:6px; background:rgba(16,185,129,0.1); padding:4px 10px; border-radius:6px; border:1px solid rgba(16,185,129,0.3);">
+          <div style="width:5px; height:5px; background:#10b981; border-radius:50%; animation:pulse-green 1s infinite;">
+          </div>
+          <span style="font-size:10px; font-weight:800; color:#10b981; letter-spacing:1px;">LIVE</span>
+        </div>
+        <div class="ctrl-group">
+          <span class="label-alt">Pair:</span>
+          <input type="text" id="explorerPair" value="BTCUSDT"
+            style="background:transparent; border:none; color:#fff; font-size:10px; font-weight:700; width:65px; outline:none; text-transform:uppercase;"
+            onchange="changePair()">
+          <button onclick="changePair()"
+            style="background:#3b82f6; border:none; color:#fff; font-size:9px; font-weight:800; padding:2px 6px; border-radius:4px; cursor:pointer;">🔭
+            VIEW</button>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div
+          style="display:flex; background:rgba(255,255,255,0.05); padding:3px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+          <button onclick="setTimeframe(60000)" class="tf-btn" data-ms="60000">1M</button>
+          <button onclick="setTimeframe(180000)" class="tf-btn active" data-ms="180000">3M</button>
+          <button onclick="setTimeframe(300000)" class="tf-btn" data-ms="300000">5M</button>
+          <button onclick="setTimeframe(900000)" class="tf-btn" data-ms="900000">15M</button>
+          <button onclick="setTimeframe(1800000)" class="tf-btn" data-ms="1800000">30M</button>
+          <button onclick="setTimeframe(3600000)" class="tf-btn" data-ms="3600000">1H</button>
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="ctrl-group">
+            <span class="label-alt" style="color:#f59e0b;">Heat:</span>
+            <input type="range" id="heatFilterSlider" min="0" max="0.9" step="0.05" value="0.3"
+              style="width:50px; height:4px; accent-color:#f59e0b;" oninput="updateHeatSensitivity(this.value)">
+          </div>
+          <div class="ctrl-group">
+            <span class="label-alt" style="color:#3b82f6;">Size:</span>
+            <input type="range" id="bubbleSizeSlider" min="0.1" max="25" step="0.5" value="1.0"
+              style="width:60px; height:4px; accent-color:#3b82f6;" oninput="updateBubbleScale(this.value)">
+          </div>
+          <div class="ctrl-group">
+            <span class="label-alt" style="color:#3b82f6;">Zoom-X:</span>
+            <input type="range" id="timeZoomSlider" min="10" max="3600" step="10" value="180"
+              style="width:80px; height:4px; accent-color:#3b82f6;" oninput="updateTimeZoom(this.value)">
+          </div>
+
+          <div style="display:flex; gap:8px;">
+            <div style="display:flex; align-items:center; gap:3px;">
+              <input type="checkbox" id="showBubbles" checked>
+              <label for="showBubbles" class="label-alt">BUB</label>
+            </div>
+            <div style="display:flex; align-items:center; gap:3px;">
+              <input type="checkbox" id="showCandles" checked>
+              <label for="showCandles" class="label-alt">CAN</label>
+            </div>
+            <div style="display:flex; align-items:center; gap:3px;">
+              <input type="checkbox" id="showDeltaBadges" checked>
+              <label for="showDeltaBadges" class="label-alt">DLT</label>
+            </div>
+            <div style="display:flex; align-items:center; gap:3px;">
+              <input type="checkbox" id="autoScale" checked>
+              <label for="autoScale" class="label-alt">AUTO</label>
+            </div>
+          </div>
+
+          <div
+            style="display:flex; align-items:center; gap:8px; border-left:1px solid rgba(255,255,255,0.1); padding-left:10px;">
+            <button id="muteBtn" onclick="toggleMute()"
+              style="background:none; border:none; cursor:pointer; color:#fff; font-size:14px; opacity:0.8;">🔊</button>
+            <input type="checkbox" id="whaleSound" checked>
+            <label for="whaleSound" style="font-size:10px; cursor:pointer;">🐋</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🚀 MAIN ENGINE CANVAS -->
+    <div
+      style="flex:1; display:flex; gap:2px; background:#000; border:1px solid rgba(255,255,255,0.1); border-radius:8px; overflow:hidden; position: relative;">
+
+      <!-- 🛠️ FLOATING DRAWING TOOLBAR -->
+      <div class="drawing-toolbar">
+        <button id="tool-move" class="tool-btn active" title="Move Tool (V)" onclick="setTool('move')">🖱️</button>
+        <button id="tool-box" class="tool-btn" title="Box Tool (B)" onclick="setTool('box')">⬜</button>
+        <div style="height:1px; background:rgba(255,255,255,0.1); margin:5px 0;"></div>
+        <button class="tool-btn danger" title="Clear All" onclick="clearDrawings()">🗑️</button>
+      </div>
+
+      <div style="flex:1; position:relative; overflow:hidden;">
+        <canvas id="heatmapCanvas" style="width:100%; height:100%; cursor:crosshair;"></canvas>
+        <div id="heatmapLastUpdate"
+          style="position:absolute; bottom:10px; left:10px; font-size:9px; color:rgba(255,255,255,0.3); background:rgba(0,0,0,0.5); padding:2px 6px; border-radius:4px;">
+          --:--:--</div>
+      </div>
+      <div
+        style="width:170px; background:#050505; border-left:1px solid rgba(255,255,255,0.1); display:flex; flex-direction:column;">
+        <div
+          style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.1); font-size:9px; font-weight:800; text-align:center; color:var(--text-muted); background:#000;">
+          DEPTH (DOM)</div>
+        <canvas id="domCanvas" style="width:100%; flex:1;"></canvas>
+      </div>
+    </div>
+
+    <div
+      style="margin-top:8px; color:var(--text-muted); font-size:9px; display:flex; justify-content:space-between; font-weight:500;">
+      <div>TPS: <span id="tpsDisplay" style="color:#00ffff; font-weight:800;">0</span> | WHEEL: Price Zoom | CTRL+WHEEL:
+        Time Zoom | ALT+WHEEL: Bubble Size</div>
+      <div>BOOKMAP PRO ENGINE V13.0 — DRAWING TOOLS BY ANTIGRAVITY</div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * 📈 BOOKMAP PRO DASHBOARD — THE COMPLETE 1:1 REPLICA
+     */
+
+    let heatmapActive = true;
+    let heatmapPair = 'BTCUSDT';
+    let depthWS = null; let tradeWS = null;
+
+    // Core Data Buffers
+    let heatSnapshots = []; let tradeBubbles = []; let klines = [];
+    const MAX_SNAPSHOTS = 1000; const MAX_BUBBLES = 5000; const MAX_KLINES = 1000;
+
+    // Settings
+    let TIME_WINDOW_MS = 180000;
+    let bubbleScale = 1.0;
+    let heatSensitivity = 0.3;
+
+    // 🛠️ DRAWING STATE
+    let manualDrawings = JSON.parse(localStorage.getItem('bookmap_drawings') || '[]');
+    let activeTool = 'move';
+    let drawingInProgress = null; // { tStart, pStart, tEnd, pEnd }
+
+    // View State
+    let minPrice = 0; let maxPrice = 0; let currentPrice = 0;
+    let isDragging = false; let isRightDragging = false;
+    let lastMouseY = 0; let lastMouseX = 0;
+    let timeOffset = 0; let isLive = true;
+    let lastRenderTime = 0; let tradeCounter = 0; let lastTPSUpdate = Date.now();
+
+    // AUDIO
+    let audioCtx = null; let isMuted = false;
+
+    async function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+    }
+
+    function playSynthSound(frequency, type, duration, volume = 0.1) {
+      if (isMuted || !audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+        gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+      } catch (e) { }
+    }
+
+    function toggleMute() {
+      isMuted = !isMuted; document.getElementById('muteBtn').innerHTML = isMuted ? '🔇' : '🔊';
+      if (!isMuted) initAudio();
+    }
+
+    // 🎨 VIVID PALETTE
+    const HEAT_COLORS = [
+      { threshold: 0.0, color: [2, 5, 12] }, { threshold: 0.1, color: [0, 40, 80] },
+      { threshold: 0.2, color: [0, 100, 160] }, { threshold: 0.4, color: [0, 200, 255] },
+      { threshold: 0.6, color: [0, 255, 100] }, { threshold: 0.75, color: [255, 230, 0] },
+      { threshold: 0.9, color: [255, 100, 0] }, { threshold: 1.0, color: [255, 0, 0] }
+    ];
+
+    function getVividColor(intensity) {
+      const curve = Math.pow(intensity, 1.4);
+      for (let i = 0; i < HEAT_COLORS.length - 1; i++) {
+        const curr = HEAT_COLORS[i]; const next = HEAT_COLORS[i + 1];
+        if (curve >= curr.threshold && curve <= next.threshold) {
+          const factor = (curve - curr.threshold) / (next.threshold - curr.threshold);
+          const r = Math.round(curr.color[0] + factor * (next.color[0] - curr.color[0]));
+          const g = Math.round(curr.color[1] + factor * (next.color[1] - curr.color[1]));
+          const b = Math.round(curr.color[2] + factor * (next.color[2] - curr.color[2]));
+          return `rgb(${r}, ${g}, ${b})`;
+        }
+      }
+      return 'rgb(255, 0, 0)';
+    }
+
+    // 🛠️ TOOLBAR HANDLERS
+    function setTool(tool) {
+      activeTool = tool;
+      document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(`tool-${tool}`)?.classList.add('active');
+    }
+
+    function clearDrawings() {
+      if (confirm('Clear all manual drawings?')) {
+        manualDrawings = [];
+        localStorage.removeItem('bookmap_drawings');
+      }
+    }
+
+    // UI HANDLERS
+    function updateBubbleScale(v) { bubbleScale = parseFloat(v); document.getElementById('bubbleSizeSlider').value = v; }
+    function updateHeatSensitivity(v) { heatSensitivity = parseFloat(v); }
+    function updateTimeZoom(v) {
+      TIME_WINDOW_MS = parseInt(v) * 1000;
+      document.getElementById('timeZoomSlider').value = v;
+      document.querySelectorAll('.tf-btn').forEach(b => {
+        const active = parseInt(b.dataset.ms) === TIME_WINDOW_MS;
+        b.classList.toggle('active', active);
+        b.style.background = active ? '#3b82f6' : 'none';
+        b.style.color = active ? '#fff' : '#888';
+      });
+    }
+    function setTimeframe(ms) { updateTimeZoom(ms / 1000); }
+
+    function changePair() {
+      const p = document.getElementById('explorerPair').value.trim().toUpperCase(); if (!p) return;
+      heatmapPair = p; heatSnapshots = []; tradeBubbles = []; klines = []; currentPrice = 0;
+      fetchInitialData().then(() => startWebSockets());
+    }
+
+    async function fetchInitialData() {
+      try {
+        const symbol = heatmapPair;
+        const kRes = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=1m&limit=100`);
+        const kData = await kRes.json();
+        klines = kData.map(k => ({ time: k[0], open: parseFloat(k[1]), high: parseFloat(k[2]), low: parseFloat(k[3]), close: parseFloat(k[4]), delta: 0 }));
+        const tRes = await fetch(`https://fapi.binance.com/fapi/v1/aggTrades?symbol=${symbol}&limit=1000`);
+        const tData = await tRes.json();
+        tData.forEach(t => {
+          const bin = Math.floor(t.T / 100) * 100; const last = tradeBubbles[tradeBubbles.length - 1];
+          if (last && last.time === bin) { if (t.m) last.sellQty += parseFloat(t.q); else last.buyQty += parseFloat(t.q); }
+          else { tradeBubbles.push({ time: bin, price: parseFloat(t.p), buyQty: t.m ? 0 : parseFloat(t.q), sellQty: t.m ? parseFloat(t.q) : 0 }); }
+        });
+        currentPrice = parseFloat(tData[tData.length - 1].p);
+        minPrice = currentPrice * 0.9995; maxPrice = currentPrice * 1.0005;
+      } catch (e) { }
+    }
+
+    function startWebSockets() {
+      if (depthWS) depthWS.close(); if (tradeWS) tradeWS.close();
+      const s = heatmapPair.toLowerCase();
+      depthWS = new WebSocket(`wss://fstream.binance.com/ws/${s}@depth20@100ms`);
+      depthWS.onmessage = (e) => {
+        const d = JSON.parse(e.data);
+        heatSnapshots.push({ time: Date.now(), price: currentPrice || parseFloat(d.b[0][0]), bids: d.b.map(b => [parseFloat(b[0]), parseFloat(b[1])]), asks: d.a.map(a => [parseFloat(a[0]), parseFloat(a[1])]) });
+        if (heatSnapshots.length > MAX_SNAPSHOTS) heatSnapshots.shift();
+      };
+      tradeWS = new WebSocket(`wss://fstream.binance.com/ws/${s}@aggTrade`);
+      tradeWS.onmessage = (e) => {
+        const d = JSON.parse(e.data); currentPrice = parseFloat(d.p); const qty = parseFloat(d.q); const delta = d.m ? -qty : qty;
+        tradeCounter++; if (qty * currentPrice > 15000 && document.getElementById('whaleSound').checked) playSynthSound(130, 'triangle', 0.5, 0.15);
+        const bin = Math.floor(Date.now() / 100) * 100; const last = tradeBubbles[tradeBubbles.length - 1];
+        if (last && last.time === bin) { if (d.m) last.sellQty += qty; else last.buyQty += qty; last.price = (last.price + currentPrice) / 2; }
+        else { tradeBubbles.push({ time: bin, price: currentPrice, buyQty: d.m ? 0 : qty, sellQty: d.m ? qty : 0 }); }
+        if (tradeBubbles.length > MAX_BUBBLES) tradeBubbles.shift();
+        const ct = Math.floor(Date.now() / 60000) * 60000; let k = klines[klines.length - 1];
+        if (!k || k.time !== ct) { klines.push({ time: ct, open: currentPrice, high: currentPrice, low: currentPrice, close: currentPrice, delta: delta }); }
+        else { k.high = Math.max(k.high, currentPrice); k.low = Math.min(k.low, currentPrice); k.close = currentPrice; k.delta += delta; }
+      };
+    }
+
+    function setupInteractions() {
+      const canvas = document.getElementById('heatmapCanvas');
+
+      const getPoint = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const now = Date.now();
+        const end = isLive ? now : (now + timeOffset);
+        const t = (end - TIME_WINDOW_MS) + (x / canvas.offsetWidth) * TIME_WINDOW_MS;
+        const p = maxPrice - (y / canvas.offsetHeight) * (maxPrice - minPrice);
+        return { t, p, x, y };
+      };
+
+      canvas.onwheel = (e) => {
+        e.preventDefault();
+        if (e.ctrlKey) { updateTimeZoom(Math.max(10, Math.min(3600, (TIME_WINDOW_MS / 1000) * (e.deltaY > 0 ? 1.2 : 0.8)))); }
+        else if (e.altKey) { updateBubbleScale(Math.max(0.1, Math.min(30, bubbleScale * (e.deltaY > 0 ? 0.9 : 1.1)))); }
+        else { document.getElementById('autoScale').checked = false; const pt = getPoint(e); const mP = pt.p; const z = e.deltaY > 0 ? 1.1 : 0.9; const rg = (maxPrice - minPrice) * z; const rt = pt.y / canvas.offsetHeight; maxPrice = mP + rt * rg; minPrice = maxPrice - rg; }
+      };
+
+      canvas.onmousedown = (e) => {
+        const pt = getPoint(e);
+        if (activeTool === 'box') {
+          drawingInProgress = { tStart: pt.t, pStart: pt.p, tEnd: pt.t, pEnd: pt.p };
+        } else {
+          if (e.button === 0) { isDragging = true; lastMouseY = e.clientY; lastMouseX = e.clientX; canvas.style.cursor = 'grabbing'; initAudio(); }
+          else if (e.button === 2) { isRightDragging = true; lastMouseX = e.clientX; isLive = false; }
+
+          // Delete drawing on right click
+          if (e.button === 2) {
+            const drawIdx = manualDrawings.findIndex(d => {
+              const t1 = Math.min(d.tStart, d.tEnd); const t2 = Math.max(d.tStart, d.tEnd);
+              const p1 = Math.min(d.pStart, d.pEnd); const p2 = Math.max(d.pStart, d.pEnd);
+              return pt.t >= t1 && pt.t <= t2 && pt.p >= p1 && pt.p <= p2;
+            });
+            if (drawIdx !== -1) {
+              manualDrawings.splice(drawIdx, 1);
+              localStorage.setItem('bookmap_drawings', JSON.stringify(manualDrawings));
+              isRightDragging = false; // Prevent chart drag if we deleted something
+            }
+          }
+        }
+      };
+
+      window.onmousemove = (e) => {
+        const pt = getPoint(e);
+        if (drawingInProgress) {
+          drawingInProgress.tEnd = pt.t;
+          drawingInProgress.pEnd = pt.p;
+        } else if (isDragging) {
+          document.getElementById('autoScale').checked = false;
+          const dy = e.clientY - lastMouseY;
+          const ppp = (maxPrice - minPrice) / canvas.offsetHeight;
+          minPrice += dy * ppp; maxPrice += dy * ppp;
+          lastMouseY = e.clientY;
+        } else if (isRightDragging) {
+          const dx = e.clientX - lastMouseX;
+          timeOffset += dx * (TIME_WINDOW_MS / canvas.offsetWidth);
+          lastMouseX = e.clientX;
+        }
+      };
+
+      window.onmouseup = () => {
+        if (drawingInProgress) {
+          // Only add if it has some size
+          if (Math.abs(drawingInProgress.tStart - drawingInProgress.tEnd) > 1000) {
+            manualDrawings.push(drawingInProgress);
+            localStorage.setItem('bookmap_drawings', JSON.stringify(manualDrawings));
+          }
+          drawingInProgress = null;
+        }
+        isDragging = false; isRightDragging = false;
+        canvas.style.cursor = 'crosshair';
+      };
+
+      canvas.ondblclick = () => { isLive = true; timeOffset = 0; document.getElementById('autoScale').checked = true; };
+      canvas.oncontextmenu = (e) => e.preventDefault();
+    }
+
+    function renderLoop(time) { if (time - lastRenderTime > 16) { drawMain(); drawDOM(); lastRenderTime = time; } requestAnimationFrame(renderLoop); }
+
+    function drawMain() {
+      const canvas = document.getElementById('heatmapCanvas'); const ctx = canvas.getContext('2d');
+      const w = canvas.offsetWidth; const h = canvas.offsetHeight; const dpr = window.devicePixelRatio || 1;
+      if (canvas.width !== w * dpr) { canvas.width = w * dpr; canvas.height = h * dpr; ctx.scale(dpr, dpr); }
+      ctx.fillStyle = '#010306'; ctx.fillRect(0, 0, w, h);
+      if (!currentPrice) return;
+      if (document.getElementById('autoScale').checked) { let lMin = currentPrice * 0.9998, lMax = currentPrice * 1.0002; heatSnapshots.slice(-100).forEach(s => { lMin = Math.min(lMin, s.price); lMax = Math.max(lMax, s.price); }); const r = lMax - lMin; minPrice = lMin - r * 0.25; maxPrice = lMax + r * 0.25; }
+      const now = Date.now(); const end = isLive ? now : (now + timeOffset); const start = end - TIME_WINDOW_MS;
+      const getX = (t) => ((t - start) / TIME_WINDOW_MS) * w; const getY = (p) => h - ((p - minPrice) / (maxPrice - minPrice) * h);
+
+      // 1. HEAT
+      heatSnapshots.forEach(s => { const x = getX(s.time); if (x < -10 || x > w) return; const lvls = [...s.asks, ...s.bids]; const maxQ = Math.max(...lvls.map(l => l[1]), 1); lvls.forEach(l => { const i = l[1] / maxQ; if (i < heatSensitivity) return; ctx.fillStyle = getVividColor(i); ctx.fillRect(x, getY(l[0]) - 2.5, 4, 5); }); });
+
+      // 2. CANDLES & DELTA BADGES
+      if (document.getElementById('showCandles').checked) {
+        const cW = (60000 / TIME_WINDOW_MS) * w * 0.7;
+        klines.forEach(k => {
+          const x = getX(k.time + 30000); if (x < -50 || x > w + 50) return;
+          const yo = getY(k.open), yh = getY(k.high), yl = getY(k.low), yc = getY(k.close);
+          const color = yc <= yo ? '#10b981' : '#ef4444';
+          ctx.strokeStyle = color; ctx.beginPath(); ctx.moveTo(x, yh); ctx.lineTo(x, yl); ctx.stroke();
+          ctx.fillStyle = color; ctx.globalAlpha = 0.35; ctx.fillRect(x - cW / 2, Math.min(yo, yc), cW, Math.max(1, Math.abs(yo - yc))); ctx.globalAlpha = 1;
+
+          if (document.getElementById('showDeltaBadges').checked) {
+            const dv = Math.round(k.delta || 0);
+            if (dv !== 0 || isLive) {
+              const bW = 36, bH = 18, bY = yh - 25;
+              ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, yh); ctx.lineTo(x, bY + bH); ctx.stroke();
+              ctx.fillStyle = dv >= 0 ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)';
+              ctx.strokeStyle = dv >= 0 ? '#10b981' : '#ef4444'; ctx.beginPath(); ctx.roundRect(x - bW / 2, bY, bW, bH, 4); ctx.fill(); ctx.stroke();
+              ctx.fillStyle = dv >= 0 ? '#10b981' : '#ef4444'; ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+              let txt = Math.abs(dv) >= 1000 ? (dv / 1000).toFixed(1) + 'k' : dv.toString();
+              ctx.fillText(txt, x, bY + bH / 2);
+            }
+          }
+        });
+      }
+
+      // 3. MANUAL DRAWINGS (TradingView Style)
+      const drawBox = (d, isPreview = false) => {
+        const x1 = getX(d.tStart), x2 = getX(d.tEnd);
+        const y1 = getY(d.pStart), y2 = getY(d.pEnd);
+        const drawX = Math.min(x1, x2), drawY = Math.min(y1, y2), drawW = Math.abs(x1 - x2), drawH = Math.abs(y1 - y2);
+
+        ctx.save();
+        ctx.fillStyle = isPreview ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)';
+        ctx.strokeStyle = isPreview ? 'rgba(255, 255, 255, 0.5)' : '#3b82f6';
+        ctx.lineWidth = isPreview ? 1 : 1.5;
+        if (isPreview) ctx.setLineDash([5, 5]);
+        ctx.fillRect(drawX, drawY, drawW, drawH);
+        ctx.strokeRect(drawX, drawY, drawW, drawH);
+        ctx.restore();
+      };
+
+      manualDrawings.forEach(d => drawBox(d));
+      if (drawingInProgress) drawBox(drawingInProgress, true);
+
+      // 4. BUBBLES
+      if (document.getElementById('showBubbles').checked) {
+        const vis = tradeBubbles.filter(t => getX(t.time) > -100 && getX(t.time) < w + 100);
+        const avg = vis.length > 0 ? vis.reduce((a, b) => a + (b.buyQty + b.sellQty), 0) / vis.length : 1;
+        vis.forEach(t => {
+          const x = getX(t.time), y = getY(t.price), tot = t.buyQty + t.sellQty, delt = t.buyQty - t.sellQty;
+          const bf = Math.sqrt(tot / avg); let rad = Math.min(60, Math.max(2, bf * (12 * bubbleScale)));
+          const whale = Math.abs(delt) > (avg * 12);
+          ctx.save(); ctx.globalAlpha = 0.85; if (whale) { ctx.shadowBlur = 15; ctx.shadowColor = delt > 0 ? '#00ffff' : '#ff00ff'; }
+          ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI * 2); ctx.clip();
+          const br = t.buyQty / tot;
+          const bg = ctx.createRadialGradient(x, y - rad / 2, 1, x, y, rad); bg.addColorStop(0, delt > 0 && whale ? '#ffffff' : '#10b981'); bg.addColorStop(1, '#004433');
+          ctx.fillStyle = bg; ctx.fillRect(x - rad, y - rad, rad * 2, rad * 2 * br);
+          const sg = ctx.createRadialGradient(x, y + rad / 2, 1, x, y, rad); sg.addColorStop(0, delt < 0 && whale ? '#ffffff' : '#ef4444'); sg.addColorStop(1, '#440000');
+          ctx.fillStyle = sg; ctx.fillRect(x - rad, y - rad + (rad * 2 * br), rad * 2, rad * 2 * (1 - br));
+          ctx.restore(); ctx.strokeStyle = whale ? '#fff' : 'rgba(255,255,255,0.3)'; ctx.lineWidth = whale ? 1.5 : 0.5; ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI * 2); ctx.stroke();
+          if (rad > 9 || whale) {
+            const fs = Math.max(7, Math.min(13, rad / 2.3)); ctx.fillStyle = whale ? '#ffff00' : '#ffffff'; ctx.font = `bold ${fs}px monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            const txt = (delt > 0 ? '+' : '') + (Math.abs(delt) >= 1000 ? (delt / 1000).toFixed(1) + 'k' : delt.toFixed(0));
+            ctx.shadowColor = '#000'; ctx.shadowBlur = 3; ctx.fillText(txt, x, y); ctx.shadowBlur = 0;
+          }
+        });
+      }
+      document.getElementById('heatmapLastUpdate').innerText = new Date().toLocaleTimeString();
+    }
+
+    function drawDOM() {
+      const canvas = document.getElementById('domCanvas'); const ctx = canvas.getContext('2d');
+      const wD = canvas.offsetWidth, hD = canvas.offsetHeight; const dpr = window.devicePixelRatio || 1;
+      if (canvas.width !== wD * dpr) { canvas.width = wD * dpr; canvas.height = hD * dpr; ctx.scale(dpr, dpr); }
+      ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, wD, hD);
+      const last = heatSnapshots[heatSnapshots.length - 1]; if (!last) return;
+      const gY = (p) => hD - ((p - minPrice) / (maxPrice - minPrice) * hD);
+      const lvls = [...last.asks, ...last.bids]; const mQ = Math.max(...lvls.map(l => l[1]), 1);
+      last.asks.forEach(a => { const bw = (a[1] / mQ) * (wD - 60), y = gY(a[0]); ctx.fillStyle = 'rgba(239, 68, 68, 0.45)'; ctx.fillRect(0, y - 7, bw, 14); ctx.fillStyle = '#fff'; ctx.font = '8px monospace'; ctx.textAlign = 'right'; ctx.fillText(Math.round(a[1]), wD - 5, y + 3); });
+      last.bids.forEach(b => { const bw = (b[1] / mQ) * (wD - 60), y = gY(b[0]); ctx.fillStyle = 'rgba(16, 185, 129, 0.45)'; ctx.fillRect(0, y - 7, bw, 14); ctx.fillStyle = '#fff'; ctx.font = '8px monospace'; ctx.textAlign = 'right'; ctx.fillText(Math.round(b[1]), wD - 5, y + 3); });
+      const cy = gY(currentPrice); ctx.fillStyle = '#ffcc00'; ctx.fillRect(0, cy - 10, wD, 20); ctx.fillStyle = '#000'; ctx.font = 'bold 11px Inter'; ctx.textAlign = 'right'; ctx.fillText(currentPrice.toFixed(2), wD - 5, cy + 4);
+    }
+
+    // ⌨️ SHORTCUTS
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'v' || e.key === 'V') setTool('move');
+      if (e.key === 'b' || e.key === 'B') setTool('box');
+      if (e.key === 'Delete' || e.key === 'Backspace') clearDrawings();
+    });
+
+    setInterval(() => { const n = Date.now(); document.getElementById('tpsDisplay').innerText = Math.round((tradeCounter / (n - lastTPSUpdate)) * 1000); tradeCounter = 0; lastTPSUpdate = n; }, 1000);
+    fetchInitialData().then(() => { startWebSockets(); setupInteractions(); requestAnimationFrame(renderLoop); });
+  </script>
+</body>
+
+</html>
